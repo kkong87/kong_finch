@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+
+<body>
+    <script>
+        const raw_data = {{ data|tojson }}
+
+        const directory = {
+            "True": raw_data["True"],
+            "False": raw_data["False"]
+            };
+                    
+        function renderDirectoryHTML(data) {
+            const baseUrl = "http://127.0.0.1:5000/employee?id=";
+            let html = `<div style="font-family: Arial; line-height: 1.5;">`;
+
+            for (const isActiveKey in data) {
+                html += `<h2>${isActiveKey === "True" ? "Active Employees" : "Inactive Employees"}</h2>`;
+
+                const departments = data[isActiveKey];
+
+                for (const dept in departments) {
+                html += `<h3 style="margin-left: 10px;">${dept}</h3>`;
+
+                const managers = departments[dept];
+
+                for (const manager in managers) {
+                    html += `<h4 style="margin-left: 20px;">
+                    Manager: ${manager === "No Manager" ? "None" : manager}
+                    </h4>`;
+
+                    const employees = managers[manager];
+
+                    html += `<ul style="margin-left: 40px;">`;
+
+                    employees.forEach(emp => {
+                    html += `
+                        <li>
+                        <a href="${baseUrl}${encodeURIComponent(emp.id)}" target="_blank">
+                            ${emp.Name}
+                        </a>
+                        <span style="color: gray;">(${emp.id})</span>
+                        </li>
+                    `;
+                    });
+
+                    html += `</ul>`;
+                }
+                }
+            }
+
+            html += `</div>`;
+            return html;
+        }
+
+        const html = renderDirectoryHTML(directory);
+        document.body.innerHTML = html;
+
+    </script>
+</body>

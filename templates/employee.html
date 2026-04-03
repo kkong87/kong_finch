@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<head>
+    <style>
+        body {
+  font-family: Inter, Arial, sans-serif;
+  background: #f5f7fb;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.sub {
+  color: #666;
+  font-size: 14px;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 18px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 6px;
+}
+
+.card h3 {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #444;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.grid div {
+  background: #fafafa;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.grid span {
+  display: block;
+  font-size: 11px;
+  color: #777;
+  margin-bottom: 2px;
+}
+
+.list-item {
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+.muted {
+  color: #999;
+  font-style: italic;
+}
+
+    </style>
+</head>
+<body>
+    <script>
+        const personalData = {{ individual|tojson }}
+
+        const employmentData = {{ employment|tojson }}
+
+        // function formatEmployeeHTML(personalRes, employmentRes) {
+        //     const personal = personalRes.responses?.[0]?.body || {};
+        //     const employment = employmentRes.responses?.[0]?.body || {};
+
+        //     const fullName = [
+        //         personal.first_name,
+        //         personal.middle_name,
+        //         personal.last_name
+        //     ].filter(Boolean).join(" ");
+
+        //     const preferred_name = personal.preferred_name
+
+
+
+        //     const emails = (personal.emails || [])
+        //         .map(e => `<li>${e.type}: ${e.data}</li>`)
+        //         .join("");
+
+        //     const phones = (personal.phone_numbers || [])
+        //         .map(p => `<li>${p.type}: ${p.data}</li>`)
+        //         .join("");
+
+        //     return `
+        //         <div style="font-family: Arial; border: 1px solid #ccc; padding: 16px; border-radius: 8px; max-width: 500px;">
+        //         <h2>${fullName}</h2>
+        //         <p><strong>ID:</strong> ${personal.id}</p>
+        //         <p><strong>DOB:</strong> ${personal.dob}</p>
+        //         <p><strong>Gender:</strong> ${personal.gender}</p>
+        //         <p><strong>Ethnicity:</strong> ${personal.ethnicity}</p>
+
+        //         <h3>Contact</h3>
+        //         <ul>${emails}</ul>
+        //         <ul>${phones}</ul>
+
+        //         <h3>Address</h3>
+        //         <p>
+        //             ${personal.residence?.line1 || ""}<br/>
+        //             ${personal.residence?.line2 || ""}<br/>
+        //             ${personal.residence?.city || ""}, ${personal.residence?.state || ""} ${personal.residence?.postal_code || ""}<br/>
+        //             ${personal.residence?.country || ""}
+        //         </p>
+
+        //         <h3>Employment</h3>
+        //         <p><strong>Status:</strong> ${employment.employment_status}</p>
+        //         <p><strong>Type:</strong> ${employment.employment?.type} (${employment.employment?.subtype})</p>
+        //         <p><strong>Department:</strong> ${employment.department?.name}</p>
+        //         <p><strong>Title:</strong> ${employment.title}</p>
+        //         <p><strong>Start Date:</strong> ${employment.start_date}</p>
+
+        //         <h3>Compensation</h3>
+        //         <p>
+        //             ${employment.income?.amount} ${employment.income?.currency} / ${employment.income?.unit}
+        //         </p>
+        //         </div>
+        //     `;
+        //     }
+
+        function formatEmployeeHTML(profileData, employmentData) {
+            const profile = profileData.responses[0].body;
+            const employment = employmentData.responses[0].body;
+
+            const show = (val) => (val === undefined ? "undefined" : val);
+
+            const list = (arr, renderFn) =>
+                (!arr || arr.length === 0)
+                ? "<div class='muted'>null</div>"
+                : arr.map(renderFn).join("");
+
+            return `
+                <div class="container">
+
+                <div class="header">
+                    <h1>${show(profile.first_name)} ${show(profile.middle_name)} ${show(profile.last_name)}</h1>
+                    <div class="sub">ID: ${show(profile.id)}</div>
+                </div>
+
+                <div class="card">
+                    <h2>Personal Info</h2>
+                    <div class="grid">
+                    <div><span>DOB</span>${show(profile.dob)}</div>
+                    <div><span>Gender</span>${show(profile.gender)}</div>
+                    <div><span>Ethnicity</span>${show(profile.ethnicity)}</div>
+                    <div><span>Preferred Name</span>${show(profile.preferred_name)}</div>
+                    <div><span>SSN</span>${show(profile.ssn)}</div>
+                    <div><span>Encrypted SSN</span>${show(profile.encrypted_ssn)}</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Contact</h2>
+
+                    <h3>Emails</h3>
+                    ${list(profile.emails, e => `
+                    <div class="list-item">
+                        <b>${show(e.type)}</b>: ${show(e.data)}
+                    </div>
+                    `)}
+
+                    <h3>Phone Numbers</h3>
+                    ${list(profile.phone_numbers, p => `
+                    <div class="list-item">
+                        <b>${show(p.type)}</b>: ${show(p.data)}
+                    </div>
+                    `)}
+                </div>
+
+                <div class="card">
+                    <h2>Residence</h2>
+                    <div class="grid">
+                    <div><span>Line1</span>${show(profile.residence?.line1)}</div>
+                    <div><span>Line2</span>${show(profile.residence?.line2)}</div>
+                    <div><span>City</span>${show(profile.residence?.city)}</div>
+                    <div><span>State</span>${show(profile.residence?.state)}</div>
+                    <div><span>Postal Code</span>${show(profile.residence?.postal_code)}</div>
+                    <div><span>Country</span>${show(profile.residence?.country)}</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Employment</h2>
+                    <div class="grid">
+                    <div><span>Title</span>${show(employment.title)}</div>
+                    <div><span>Status</span>${show(employment.employment_status)}</div>
+                    <div><span>Type</span>${show(employment.employment?.type)}</div>
+                    <div><span>Subtype</span>${show(employment.employment?.subtype)}</div>
+                    <div><span>Start Date</span>${show(employment.start_date)}</div>
+                    <div><span>End Date</span>${show(employment.end_date)}</div>
+                    <div><span>Department</span>${show(employment.department?.name)}</div>
+                    <div><span>Class Code</span>${show(employment.class_code)}</div>
+                    <div><span>Manager</span>${show(employment.manager?.id)}</div>
+                    <div><span>Custom Fields</span>${show(employment.custom_fields)}</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Income</h2>
+                    <div class="grid">
+                    <div><span>Amount</span>${show(employment.income?.amount)}</div>
+                    <div><span>Currency</span>${show(employment.income?.currency)}</div>
+                    <div><span>Unit</span>${show(employment.income?.unit)}</div>
+                    <div><span>Effective Date</span>${show(employment.income?.effective_date)}</div>
+                    </div>
+
+                    <h3>History</h3>
+                    ${list(employment.income_history, i => `
+                    <div class="list-item">
+                        ${show(i.amount)} ${show(i.currency)} (${show(i.unit)}) — ${show(i.effective_date)}
+                    </div>
+                    `)}
+                </div>
+
+                <div class="card">
+                    <h2>Work Location</h2>
+                    <div class="grid">
+                    <div><span>Line1</span>${show(employment.location?.line1)}</div>
+                    <div><span>Line2</span>${show(employment.location?.line2)}</div>
+                    <div><span>City</span>${show(employment.location?.city)}</div>
+                    <div><span>State</span>${show(employment.location?.state)}</div>
+                    <div><span>Postal Code</span>${show(employment.location?.postal_code)}</div>
+                    <div><span>Country</span>${show(employment.location?.country)}</div>
+                    </div>
+                </div>
+
+                </div>
+            `;
+            }
+
+
+        const html = formatEmployeeHTML(personalData, employmentData);
+        document.body.innerHTML = html;
+
+    </script>
+</body>

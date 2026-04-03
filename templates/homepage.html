@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+
+<body>
+    <div id="company"></div>
+    <div id="directory"></div>
+    <script>
+        const raw_data = {{ directory_data|tojson }}
+        const company_data = {{ company_data|tojson }}
+
+        const directory = {
+            "True": raw_data["True"],
+            "False": raw_data["False"]
+            };
+                    
+        function renderCompanyHTML(data) {
+            let html = `
+                <div style="font-family: Arial; padding: 20px;">
+                <h1>${data.legal_name}</h1>
+                <p><strong>Company ID:</strong> ${data.id}</p>
+                
+                <h2>Contact</h2>
+                <p><strong>Email:</strong> ${data.primary_email || "N/A"}</p>
+                <p><strong>Phone:</strong> ${data.primary_phone_number || "N/A"}</p>
+
+                <h2>Entity Info</h2>
+                <p><strong>Type:</strong> ${data.entity?.type || "N/A"}</p>
+                <p><strong>Subtype:</strong> ${data.entity?.subtype || "N/A"}</p>
+
+                <h2>Departments</h2>
+                <ul>
+            `;
+
+            // Remove duplicate department names
+            const uniqueDepartments = [...new Set(data.departments.map(d => d.name))];
+
+            uniqueDepartments.forEach(dept => {
+                html += `<li>${dept}</li>`;
+            });
+
+            html += `
+                </ul>
+                </div>
+            `;
+
+            return html;
+            }
+
+        function renderDirectoryHTML(data) {
+            const baseUrl = "http://127.0.0.1:5000/employee?id=";
+            let html = `<div style="font-family: Arial; line-height: 1.5;">`;
+
+            for (const isActiveKey in data) {
+                html += `<h2>${isActiveKey === "True" ? "Active Employees" : "Inactive Employees"}</h2>`;
+
+                const departments = data[isActiveKey];
+
+                for (const dept in departments) {
+                html += `<h3 style="margin-left: 10px;">Department: ${dept}</h3>`;
+
+                const managers = departments[dept];
+
+                for (const manager in managers) {
+                    html += `<h4 style="margin-left: 20px;">
+                    Manager: ${manager === "No Manager" ? "None" : manager}
+                    </h4>`;
+
+                    const employees = managers[manager];
+
+                    html += `<ul style="margin-left: 40px;">`;
+
+                    employees.forEach(emp => {
+                    html += `
+                        <li>
+                        <a href="${baseUrl}${encodeURIComponent(emp.id)}" target="_blank">
+                            ${emp.Name}
+                        </a>
+                        <span style="color: gray;">(${emp.id})</span>
+                        </li>
+                    `;
+                    });
+
+                    html += `</ul>`;
+                }
+                }
+            }
+
+            html += `</div>`;
+            return html;
+        }
+
+        const companyHTML = renderCompanyHTML(company_data)
+        document.getElementById("company").innerHTML = companyHTML
+
+        const directoryHTML = renderDirectoryHTML(directory);
+        document.getElementById("directory").innerHTML = directoryHTML
+
+    </script>
+</body>
